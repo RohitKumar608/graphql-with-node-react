@@ -1,31 +1,37 @@
-var express = require('express')
+const express = require('express');
+const bodyParser = require('body-parser');
+const graphqlHttp = require('express-graphql');
+const mongoose = require('mongoose');
+
 require('dotenv').config()
-var graphqlHTTP = require('express-graphql')
-const bodyParser = require('body-parser')
-const mongoose = require('mongoose')
-const resolver = require('./graphql/resolver/index')
-const buildSchema = require('./graphql/buildSchema/index')
-var app = express()
+const graphQlSchema = require('./graphql/schema/index');
+const graphQlResolvers = require('./graphql/resolvers/index');
+// const isAuth = require('./middleware/is-auth');
 
-app.use(bodyParser.json())
+const app = express();
 
-const events = []
+app.use(bodyParser.json());
+
+// app.use(isAuth);
+
 app.use(
   '/graphql',
-  graphqlHTTP({
-    schema: buildSchema,
-    rootValue: resolver,
-    graphiql: true,
+  graphqlHttp({
+    schema: graphQlSchema,
+    rootValue: graphQlResolvers,
+    graphiql: true
   })
-)
-app.listen(3000, () => {
-  console.log('server running at http://localhost:3000/graphql')
-})
+);
+
 mongoose
-  .connect(
-    `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.47oq7.mongodb.net/${process.env.MONGO_DB}?retryWrites=true&w=majority`
-  )
+.connect(
+      `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.47oq7.mongodb.net/${process.env.MONGO_DB}?retryWrites=true&w=majority`,
+      { useUnifiedTopology: true,  useNewUrlParser: true }
+    )
   .then(() => {
     console.log('Connected successfully')
+    app.listen(3000);
   })
-  .catch((error) => console.log(error))
+  .catch(err => {
+    console.log(err);
+  });
