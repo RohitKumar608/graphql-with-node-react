@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 
 import './Auth.css';
-// import AuthContext from '../context/auth-context';
+import AuthContext from '../context/AuthContext';
 
 class AuthPage extends Component {
   state = {
     isLogin: true
   };
 
-  // static contextType = AuthContext;
+  static contextType = AuthContext;
 
   constructor(props) {
     super(props);
