@@ -50,12 +50,10 @@ class EventsPage extends Component {
     }
 
     const event = { title, price, date, description };
-    console.log(event);
-
     const requestBody = {
       query: `
           mutation {
-            createEvent(eventInput: {title: "${title}", description: "${description}", price: ${price}, date: "${date}"}) {
+            createEvent(eventInput: {title: "${title}", description: "${description}", price: ${+price}, date: "${date}"}) {
               _id
               title
               description
@@ -67,7 +65,7 @@ class EventsPage extends Component {
     };
 
     const token = this.context.token;
-
+console.log(token)
     fetch('http://localhost:8000/graphql', {
       method: 'POST',
       body: JSON.stringify(requestBody),
