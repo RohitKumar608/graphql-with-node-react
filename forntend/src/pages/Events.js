@@ -1,18 +1,18 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 
-import Modal from '../components/Modal/Modal';
-import Backdrop from '../components/Backdrop/Backdrop';
-import EventList from '../components/Events/EventList/EventList';
-import Spinner from '../components/Spinner/Spinner';
-import AuthContext from '../context/auth-context';
-import './Events.css';
+import Modal from "../components/Modal/Modal";
+import Backdrop from "../components/Backdrop/Backdrop";
+import EventList from "../components/Events/EventList/EventList";
+import Spinner from "../components/Spinner/Spinner";
+import AuthContext from "../context/auth-context";
+import "./Events.css";
 
 class EventsPage extends Component {
   state = {
     creating: false,
     events: [],
     isLoading: false,
-    selectedEvent: null
+    selectedEvent: null,
   };
 
   static contextType = AuthContext;
@@ -61,27 +61,26 @@ class EventsPage extends Component {
               price
             }
           }
-        `
+        `,
     };
 
     const token = this.context.token;
-console.log(token)
-    fetch('http://localhost:8000/graphql', {
-      method: 'POST',
+    fetch("http://localhost:8000/graphql", {
+      method: "POST",
       body: JSON.stringify(requestBody),
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + token
-      }
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
     })
-      .then(res => {
+      .then((res) => {
         if (res.status !== 200 && res.status !== 201) {
-          throw new Error('Failed!');
+          throw new Error("Failed!");
         }
         return res.json();
       })
-      .then(resData => {
-        this.setState(prevState => {
+      .then((resData) => {
+        this.setState((prevState) => {
           const updatedEvents = [...prevState.events];
           updatedEvents.push({
             _id: resData.data.createEvent._id,
@@ -90,13 +89,13 @@ console.log(token)
             date: resData.data.createEvent.date,
             price: resData.data.createEvent.price,
             creator: {
-              _id: this.context.userId
-            }
+              _id: this.context.userId,
+            },
           });
           return { events: updatedEvents };
         });
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
       });
   };
@@ -122,40 +121,77 @@ console.log(token)
               }
             }
           }
-        `
+        `,
     };
 
-    fetch('http://localhost:8000/graphql', {
-      method: 'POST',
+    fetch("http://localhost:8000/graphql", {
+      method: "POST",
       body: JSON.stringify(requestBody),
       headers: {
-        'Content-Type': 'application/json'
-      }
+        "Content-Type": "application/json",
+      },
     })
-      .then(res => {
+      .then((res) => {
         if (res.status !== 200 && res.status !== 201) {
-          throw new Error('Failed!');
+          throw new Error("Failed!");
         }
         return res.json();
       })
-      .then(resData => {
+      .then((resData) => {
         const events = resData.data.events;
         this.setState({ events: events, isLoading: false });
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
         this.setState({ isLoading: false });
       });
   }
 
-  showDetailHandler = eventId => {
-    this.setState(prevState => {
-      const selectedEvent = prevState.events.find(e => e._id === eventId);
+  showDetailHandler = (eventId) => {
+    this.setState((prevState) => {
+      const selectedEvent = prevState.events.find((e) => e._id === eventId);
       return { selectedEvent: selectedEvent };
     });
   };
 
-  bookEventHandler = () => {};
+  bookEventHandler = () => {
+    const { selectedEvent } = this.state;
+    this.setState({ isLoading: true ,selectedEvent: null});
+    const requestBody = {
+      query: `
+          mutation {
+            bookEvent(eventId: "${selectedEvent._id}") {
+              _id
+             createdAt
+             updatedAt
+            }
+          }
+        `,
+    };
+    const token = this.context.token;
+    fetch("http://localhost:8000/graphql", {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+    })
+      .then((res) => {
+        if (res.status !== 200 && res.status !== 201) {
+          throw new Error("Failed!");
+        }
+        return res.json();
+      })
+      .then((resData) => {
+        this.setState({ isLoading: false });
+        console.log(resData)
+      })
+      .catch((error) => {
+        this.setState({ isLoading: false });
+        console.log(error);
+      });
+  };
 
   render() {
     return (
@@ -205,7 +241,7 @@ console.log(token)
           >
             <h1>{this.state.selectedEvent.title}</h1>
             <h2>
-              ${this.state.selectedEvent.price} -{' '}
+              ${this.state.selectedEvent.price} -{" "}
               {new Date(this.state.selectedEvent.date).toLocaleDateString()}
             </h2>
             <p>{this.state.selectedEvent.description}</p>
